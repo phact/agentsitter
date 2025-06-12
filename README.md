@@ -95,9 +95,15 @@ Currently the filter simply flags any POST requests. Stay tuned for filtering cu
 ### Next steps:
 
 [x] - `browser-use` local example
+
 [ ] - enhanced filtering support
+
 [ ] - `browser-use` docker example
+
 [ ] - openai `cua` example
+
 [ ] - anthropic `computer-use` example
+
 [ ] - `sitter` local mode
+
 [ ] - docker / container / cua? improvements for osx
