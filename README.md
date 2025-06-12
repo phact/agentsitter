@@ -1,6 +1,6 @@
 ## agentsitter.ai
 
-`A baby sitter for your agents.`
+`A baby sitter for your ai agents.`
 
 Agent Sitter is a layer 7 proxy [sitter] and an approval engine [app]. 
 
