@@ -1,0 +1,9 @@
+[project]
+name = "sittr"
+version = "0.1.0"
+description = "sittr cli tool for agentsitter.ai"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "typer>=0.16.0",
+]
