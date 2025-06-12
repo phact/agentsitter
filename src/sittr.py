@@ -21,7 +21,11 @@ DEFAULT_TOKEN_URL = "https://www.agentsitter.ai/token/new"
 CERT_URL = "https://agentsitter.ai/certs/ca-cert.pem"
 CERT_PATH = Path.cwd() / "ca-cert.pem"
 NETWORK_NAME = "agent-sitter-net"
-BASHRC_PATH = Path.home() / ".bashrc"
+# pick the right RC file for token persistence
+if sys.platform == "darwin":
+    RC_PATH = Path.home() / ".zshrc"
+else:
+    RC_PATH = Path.home() / ".bashrc"
 
 
 @app.callback(invoke_without_command=True)
@@ -86,19 +90,19 @@ def cert_installed() -> bool:
 
 def token_present() -> bool:
     """Return True if AGENTSITTER_TOKEN is in env or bashrc."""
-    if BASHRC_PATH.exists():
-        for line in BASHRC_PATH.read_text().splitlines():
+    if RC_PATH.exists():
+        for line in RC_PATH.read_text().splitlines():
             if line.strip().startswith("export AGENTSITTER_TOKEN="):
                 return True
     return False
 
 def remove_token_from_bashrc():
     """Remove any AGENTSITTER_TOKEN export lines from ~/.bashrc."""
-    if not BASHRC_PATH.exists():
+    if not RC_PATH.exists():
         return
-    lines = BASHRC_PATH.read_text().splitlines()
+    lines = RC_PATH.read_text().splitlines()
     new = [l for l in lines if not l.strip().startswith("export AGENTSITTER_TOKEN=")]
-    BASHRC_PATH.write_text("\n".join(new) + "\n")
+    RC_PATH.write_text("\n".join(new) + "\n")
     typer.secho("Removed AGENTSITTER_TOKEN from ~/.bashrc", fg=typer.colors.GREEN)
 
 def network_exists() -> bool:
@@ -168,14 +172,14 @@ def token():
     typer.secho("AGENTSITTER_TOKEN set in current session", fg=typer.colors.GREEN)
 
     # ensure bashrc exists
-    lines = BASHRC_PATH.read_text().splitlines() if BASHRC_PATH.exists() else []
+    lines = RC_PATH.read_text().splitlines() if RC_PATH.exists() else []
     export_line = f'export AGENTSITTER_TOKEN="{token_val}"'
 
     # remove any old export
     lines = [l for l in lines if not l.strip().startswith("export AGENTSITTER_TOKEN=")]
     lines.append(export_line)
-    BASHRC_PATH.write_text("\n".join(lines) + "\n")
-    typer.secho(f"Added AGENTSITTER_TOKEN to {BASHRC_PATH}", fg=typer.colors.GREEN)
+    RC_PATH.write_text("\n".join(lines) + "\n")
+    typer.secho(f"Added AGENTSITTER_TOKEN to {RC_PATH}", fg=typer.colors.GREEN)
     # 3) print the export for the parent shell
     typer.echo("to set env var run:")
     export_cmd = f'export AGENTSITTER_TOKEN="{token_val}"'
@@ -300,6 +304,11 @@ def docker_network_setup(
     Create Docker network 'agent-sitter-net' and insert iptables rules
     to force containers to use the proxy.
     """
+    # we don’t support Docker network proxying on macOS right now
+    if sys.platform == "darwin":
+        typer.secho("Skipping Docker network & iptables setup on macOS", fg=typer.colors.YELLOW)
+        return
+
     proxy_ip = resolve_proxy_ip(proxy_host)
 
     # 1. Create network if missing
@@ -352,6 +361,11 @@ def docker_network_cleanup(
     """
     Remove iptables rules and delete Docker network 'agent-sitter-net'.
     """
+    # no-op on macOS
+    if sys.platform == "darwin":
+        typer.secho("Skipping Docker network & iptables cleanup on macOS", fg=typer.colors.YELLOW)
+        return
+
     proxy_ip = resolve_proxy_ip(proxy_host)
 
     # 1. Try to get bridge iface (if network exists)
