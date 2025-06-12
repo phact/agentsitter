@@ -32,6 +32,8 @@ or
 
 select local, install certs, start the tunnel, and set up your token.
 
+Note: docker setup is not currently supporeted for osx
+
 ```
 uvx sittr init
 Initialize for which environment? [local/docker] [local]: local
@@ -98,3 +100,4 @@ Currently the filter simply flags any POST requests. Stay tuned for filtering cu
 [ ] - openai `cua` example
 [ ] - anthropic `computer-use` example
 [ ] - `sitter` local mode
+[ ] - docker / container / cua? improvements for osx
