@@ -1,4 +1,4 @@
-#main# agentsitter.ai
+## agentsitter.ai
 
 `A baby sitter for your agents.`
 
@@ -30,7 +30,7 @@ or
     pipx sittr init
 
 
-select local, install certs, and start the tunnel.
+select local, install certs, start the tunnel, and set up your token.
 
 ```
 uvx sittr init
@@ -44,11 +44,18 @@ No Docker bridge bind (network not found).
 Stunnel started.
 Open the dashboard in your browser? [y/N]: n
 Skipped: Open the dashboard in your browser
-Open the token URL? [y/N]: n
-Skipped: Open the token URL
+Open the token URL? [y/N]: y
+Obtain your API token at: https://www.agentsitter.ai/token/new
+Paste your AgentSitter API token: ghu_...
+AGENTSITTER_TOKEN set in current session
+Added AGENTSITTER_TOKEN to ~/.bashrc
+to set env var run:
+export AGENTSITTER_TOKEN="ghu_..."
 ```
 
-`sittr status` should show the certs installed and tunnel started, run:
+Remember to set up your env var or start a new shell before moving on to the next step.
+
+`sittr status` should show the certs installed, tunnel started, and token setup, run:
 
     uvx sittr status
 
@@ -62,6 +69,7 @@ $ uvx sittr status
 Tunel started: ✅
 CA certificate trusted: ✅
 Docker network 'agent-sitter-net' exists: ❌
+API token configured in bashrc: ✅
 ```
 
 Then you're ready to run browser-use: 
