@@ -21,6 +21,7 @@ DEFAULT_TOKEN_URL = "https://www.agentsitter.ai/token/new"
 CERT_URL = "https://agentsitter.ai/certs/ca-cert.pem"
 CERT_PATH = Path.cwd() / "ca-cert.pem"
 NETWORK_NAME = "agent-sitter-net"
+BASHRC_PATH = Path.home() / ".bashrc"
 
 
 @app.callback(invoke_without_command=True)
@@ -83,6 +84,22 @@ def cert_installed() -> bool:
         return res.returncode == 0
     return False
 
+def token_present() -> bool:
+    """Return True if AGENTSITTER_TOKEN is in env or bashrc."""
+    if BASHRC_PATH.exists():
+        for line in BASHRC_PATH.read_text().splitlines():
+            if line.strip().startswith("export AGENTSITTER_TOKEN="):
+                return True
+    return False
+
+def remove_token_from_bashrc():
+    """Remove any AGENTSITTER_TOKEN export lines from ~/.bashrc."""
+    if not BASHRC_PATH.exists():
+        return
+    lines = BASHRC_PATH.read_text().splitlines()
+    new = [l for l in lines if not l.strip().startswith("export AGENTSITTER_TOKEN=")]
+    BASHRC_PATH.write_text("\n".join(new) + "\n")
+    typer.secho("Removed AGENTSITTER_TOKEN from ~/.bashrc", fg=typer.colors.GREEN)
 
 def network_exists() -> bool:
     """Return True if the Docker network is present."""
@@ -118,6 +135,11 @@ def cleanup():
         steps.append(("Tear down Docker network & iptables rules", docker_network_cleanup))
     else:
         typer.secho(f"No Docker network '{NETWORK_NAME}' found; skipping network cleanup.", fg=typer.colors.YELLOW)
+    if token_present():
+        steps.append(("Remove AGENTSITTER_TOKEN from ~/.bashrc", remove_token_from_bashrc))
+    else:
+        typer.secho("No AGENTSITTER_TOKEN found; skipping token cleanup.", fg=typer.colors.YELLOW)
+
 
     if not steps:
         typer.secho("Nothing to clean up.", fg=typer.colors.GREEN)
@@ -133,9 +155,31 @@ def cleanup():
 def token():
     """
     Show the URL where you can obtain a new API token.
+    Prompt for your API token, export it to this session and
+    persist it in ~/.bashrc (avoiding duplicates).
     """
     webbrowser.open(DEFAULT_TOKEN_URL)
     typer.secho(f"Obtain your API token at: {DEFAULT_TOKEN_URL}", fg=typer.colors.BLUE)
+    # prompt
+    token_val = typer.prompt("Paste your AgentSitter API token")
+
+    # set in current session
+    os.environ["AGENTSITTER_TOKEN"] = token_val
+    typer.secho("AGENTSITTER_TOKEN set in current session", fg=typer.colors.GREEN)
+
+    # ensure bashrc exists
+    lines = BASHRC_PATH.read_text().splitlines() if BASHRC_PATH.exists() else []
+    export_line = f'export AGENTSITTER_TOKEN="{token_val}"'
+
+    # remove any old export
+    lines = [l for l in lines if not l.strip().startswith("export AGENTSITTER_TOKEN=")]
+    lines.append(export_line)
+    BASHRC_PATH.write_text("\n".join(lines) + "\n")
+    typer.secho(f"Added AGENTSITTER_TOKEN to {BASHRC_PATH}", fg=typer.colors.GREEN)
+    # 3) print the export for the parent shell
+    typer.echo("to set env var run:")
+    export_cmd = f'export AGENTSITTER_TOKEN="{token_val}"'
+    typer.echo(export_cmd)
 
 
 @app.command()
@@ -433,6 +477,10 @@ def status():
     except Exception:
         net_ok = False
     typer.secho(f"Docker network '{NETWORK_NAME}' exists: {'✅' if net_ok else '❌'}")
+
+    # 4) API token configured in bashrc?
+    token_ok = token_present()
+    typer.secho(f"API token configured in bashrc: {'✅' if token_ok else '❌'}")
 
 
 if __name__ == "__main__":
