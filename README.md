@@ -15,7 +15,7 @@ Any AI agent with access to the web can be babysat by agentsitter. This repo foc
 ## System Requirements
 
 Linux / OSX
-For windows support see / vote for [this issue](https://github.com/phact/agent-sitter/issues)
+For windows support see / vote for [this issue](https://github.com/phact/agentsitter/issues/1)
 
 
 ## Getting started
