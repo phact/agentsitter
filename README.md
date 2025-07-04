@@ -1,4 +1,6 @@
 ## agentsitter.ai
+[![Discord chat](https://img.shields.io/static/v1?label=Chat%20on&message=Discord&color=blue&logo=Discord&style=flat-square)](https://discord.gg/2Jg6P2tY5X)
+[![PyPI](https://img.shields.io/pypi/dm/sittr)](https://badge.fury.io/py/sittr)
 
 `A baby sitter for your ai agents.`
 
